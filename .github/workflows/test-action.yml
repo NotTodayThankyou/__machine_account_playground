@@ -16,6 +16,7 @@ jobs:
       - name: Ensure user instigating the workflow owns the org that owns the repo.
         uses: actions/github-script@v9
         with:
+          # Oganization permissions: Read access to members 
           github-token: ${{ secrets.READ_ORG_MEMBERS_PAT }}
           script: |
             const org = context.repo.owner;
@@ -40,7 +41,7 @@ jobs:
         with:
           github-token: ${{ secrets.MACHINE_ACCOUNT_PAT }}
           script: |
-            const targetOwner = 'NotTodayThankyou';
+            const targetOwner = 'JamesParrott';
             const targetRepo = '__dummy_test_repo';
             const branchName = `test-branch-${Date.now()}`;
             const filePath = 'test-file.txt';
