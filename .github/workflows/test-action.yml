@@ -1,0 +1,94 @@
+name: Run the speed tests
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+
+
+  build_wheel_and_sdist:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Orchestrate Fork, Commit, and PR Test
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.MACHINE_ACCOUNT_PAT }}
+          script: |
+            const targetOwner = 'NotTodayThankyou';
+            const targetRepo = '__dummy_test_repo';
+            const branchName = `test-branch-${Date.now()}`;
+            const filePath = 'test-file.txt';
+
+            // ---------------------------------------------------------------------
+            // i) CREATE A FORK OF THE DUMMY REPO
+            // ---------------------------------------------------------------------
+            console.log(`Forking ${targetOwner}/${targetRepo}...`);
+            const { data: fork } = await github.rest.repos.createFork({
+              owner: targetOwner,
+              repo: targetRepo,
+              default_branch_only: true
+            });
+
+            const forkOwner = fork.owner.login;
+            const forkRepo = fork.name;
+
+            // Wait a few seconds for GitHub to finish provisioning the fork
+            console.log(`Fork created: ${forkOwner}/${forkRepo}. Waiting for sync...`);
+            await new Promise(resolve => setTimeout(resolve, 5000));
+
+            // ---------------------------------------------------------------------
+            // ii) MAKE A NEW BRANCH ON THE FORK
+            // ---------------------------------------------------------------------
+            // Fetch the default branch commit SHA from the base repository
+            const { data: baseRepo } = await github.rest.repos.get({
+              owner: targetOwner,
+              repo: targetRepo
+            });
+            const defaultBranch = baseRepo.default_branch;
+
+            const { data: refData } = await github.rest.git.getRef({
+              owner: targetOwner,
+              repo: targetRepo,
+              ref: `heads/${defaultBranch}`
+            });
+            const baseSha = refData.object.sha;
+
+            console.log(`Creating branch '${branchName}' on fork off SHA ${baseSha}...`);
+            await github.rest.git.createRef({
+              owner: forkOwner,
+              repo: forkRepo,
+              ref: `refs/heads/${branchName}`,
+              sha: baseSha
+            });
+
+            // ---------------------------------------------------------------------
+            // iii) CREATE A NOMINAL CHANGE & COMMIT ON THE FORK
+            // ---------------------------------------------------------------------
+            const contentEncoded = Buffer.from(`Test automated commit at ${new Date().toISOString()}`).toString('base64');
+
+            console.log(`Creating test file commit on '${branchName}'...`);
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: forkOwner,
+              repo: forkRepo,
+              path: filePath,
+              message: 'test: automated commit for integration test',
+              content: contentEncoded,
+              branch: branchName
+            });
+
+            // ---------------------------------------------------------------------
+            // iv) RAISE A PR FROM FORK TO PARENT DUMMY REPO
+            // ---------------------------------------------------------------------
+            console.log(`Raising PR from ${forkOwner}:${branchName} to ${targetOwner}:${defaultBranch}...`);
+            const { data: pr } = await github.rest.pulls.create({
+              owner: targetOwner,
+              repo: targetRepo,
+              title: `[Automated Test] PR from ${forkOwner}`,
+              head: `${forkOwner}:${branchName}`,
+              base: defaultBranch,
+              body: 'This is an automated test PR generated to verify the NotTodayThankyou action.'
+            });
+
+            console.log(`🎉 Test PR successfully created: ${pr.html_url} (PR #${pr.number})`);
