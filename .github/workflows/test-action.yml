@@ -7,7 +7,7 @@ on:
 jobs:
 
 
-  build_wheel_and_sdist:
+  Fork_branch_commit_raise_PR_as_machine_account:
     if: ${{ github.actor == github.repository_owner || github.actor == 'JamesParrott' }}
     runs-on: ubuntu-latest
     steps:
@@ -18,20 +18,20 @@ jobs:
             const org = context.repo.owner;
             const username = context.actor;
 
-            try {
-              const { data: membership } = await github.rest.orgs.getMembershipForUser({
-                org: org,
-                username: username
-              });
+            // try {
+            const { data: membership } = await github.rest.orgs.getMembershipForUser({
+              org: org,
+              username: username
+            });
 
-              if (membership.role === 'admin' && membership.state === 'active') {
-                console.log(`✅ User ${username} is an active Owner (admin) of ${org}.`);
-              } else {
-                core.setFailed(`❌ User ${username} is not an owner of ${org}. Role: ${membership.role}`);
-              }
-            } catch (err) {
-              core.setFailed(`Failed to verify org membership for ${username}: ${err.message}`);
+            if (membership.role === 'admin' && membership.state === 'active') {
+              console.log(`✅ User ${username} is an active Owner (admin) of ${org}.`);
+            } else {
+              core.setFailed(`❌ User ${username} is not an owner of ${org}. Role: ${membership.role}`);
             }
+            // } catch (err) {
+            //  core.setFailed(`Failed to verify org membership for ${username}: ${err.message}`);
+            // }
       - name: Orchestrate Fork, Commit, and PR Test
         uses: actions/github-script@v9
         with:
