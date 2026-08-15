@@ -1,4 +1,4 @@
-name: Run the speed tests
+name: Fork, branch, commit, and raise a PR via a GITHUB_PAT
 
 on:
   push:
@@ -10,6 +10,8 @@ jobs:
   Fork_branch_commit_raise_PR_as_machine_account:
     if: ${{ github.actor == github.repository_owner || github.actor == 'JamesParrott' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read   # Standard repository read access
     steps:
       - name: Ensure user instigating the workflow owns the org that owns the repo.
         uses: actions/github-script@v9
