@@ -16,6 +16,7 @@ jobs:
       - name: Ensure user instigating the workflow owns the org that owns the repo.
         uses: actions/github-script@v9
         with:
+          github-token: ${{ secrets.READ_ORG_MEMBERS_PAT }}
           script: |
             const org = context.repo.owner;
             const username = context.actor;
