@@ -41,7 +41,7 @@ jobs:
         with:
           github-token: ${{ secrets.MACHINE_ACCOUNT_CLASSIC }}
           script: |
-            const targetOwner = 'JamesParrott';
+            const targetOwner = 'NotTodayThankyou';
             const targetRepo = '__dummy_test_repo';
             const branchName = `test-branch-${Date.now()}`;
             const filePath = 'test-file.txt';
