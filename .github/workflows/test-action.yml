@@ -16,7 +16,7 @@ jobs:
       - name: Ensure user instigating the workflow owns the org that owns the repo.
         uses: actions/github-script@v9
         with:
-          # Oganization permissions: Read access to members 
+          # Organization permissions: Read access to members 
           github-token: ${{ secrets.READ_ORG_MEMBERS_PAT }}
           script: |
             const org = context.repo.owner;
@@ -39,6 +39,8 @@ jobs:
       - name: Orchestrate Fork, Commit, and PR Test
         uses: actions/github-script@v9
         with:
+          # Must be a classic token, as fine grained PATs require Write access on the repo
+          # the PR is being raised to target, not just on the fork
           github-token: ${{ secrets.MACHINE_ACCOUNT_CLASSIC }}
           script: |
             const targetOwner = 'NotTodayThankyou';
