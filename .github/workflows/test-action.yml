@@ -39,7 +39,7 @@ jobs:
       - name: Orchestrate Fork, Commit, and PR Test
         uses: actions/github-script@v9
         with:
-          github-token: ${{ secrets.MACHINE_ACCOUNT_PAT }}
+          github-token: ${{ secrets.MACHINE_ACCOUNT_PAT_2 }}
           script: |
             const targetOwner = 'JamesParrott';
             const targetRepo = '__dummy_test_repo';
